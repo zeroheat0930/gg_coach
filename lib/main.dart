@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gg_coach/result_screen.dart';
+import 'package:gg_coach/api_key.dart';
 import 'package:http/http.dart' as http; // http 라이브러리를 가져옵니다.
 import 'dart:convert'; // JSON 데이터를 다루기 위해 필요합니다.
 
@@ -50,7 +52,7 @@ class _SearchScreenState extends State<SearchScreen> {
       _searchResult = '';
     });
 
-    const apiKey = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJlMmY4MWQxMC03MDRlLTAxM2UtNDk4OS00MjVkMGRiNDBlMGYiLCJpc3MiOiJnYW1lbG9ja2VyIiwiaWF0IjoxNzU3NDkzMjY3LCJwdWIiOiJibHVlaG9sZSIsInRpdGxlIjoicHViZyIsImFwcCI6ImdnY29hY2gifQ.tcIEuQVyn9qVwyfnCYInxAa3SblTmroe5pDUdjXVYto'; // 여기에 발급받은 API 키를 붙여넣으세요!
+    const apiKey = pubgApiKey;
     final url = Uri.parse('https://api.pubg.com/shards/steam/players?filter[playerNames]=$nickname');
 
     try {
@@ -63,14 +65,27 @@ class _SearchScreenState extends State<SearchScreen> {
         },
       );
 
+      // ### 이 부분을 추가해주세요! ###
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+      // #############################
+
       // 3. 응답 결과 처리하기
       if (response.statusCode == 200) {
         // 성공!
         final data = json.decode(response.body);
         final playerId = data['data'][0]['id'];
-        setState(() {
-          _searchResult = '플레이어 찾음!\nID: $playerId';
-        });
+
+        // Navigator를 사용해 새로운 화면으로 이동합니다.
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultScreen(
+              nickname: nickname,
+              playerId: playerId,
+            ),
+          ),
+        );
       } else {
         // 실패 (플레이어가 없거나, 오타 등)
         setState(() {
@@ -109,6 +124,7 @@ class _SearchScreenState extends State<SearchScreen> {
               decoration: const InputDecoration(
                 labelText: '플레이어 닉네임',
                 hintText: '닉네임을 입력하세요',
+                helperText: '플레이어 닉네임의 대소문자를 정확히 입력해주세요.',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -117,22 +133,12 @@ class _SearchScreenState extends State<SearchScreen> {
 
             // 검색 버튼
             ElevatedButton(
-              onPressed: () {
-                // 3. 버튼을 누르면 _controller.text로 현재 입력된 값을 가져옵니다.
-                final nickname = _controller.text;
-                print('입력된 닉네임: $nickname');
-
-                // 간단한 알림창 띄우기
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      content: Text('입력된 닉네임은 "$nickname" 입니다.'),
-                    );
-                  },
-                );
-              },
-              child: const Text('검색'),
+              // 버튼을 누를 때, 로딩 중(_isLoading이 true)이면 버튼을 비활성화(null)하고,
+              // 로딩 중이 아니면 _searchPlayer 함수를 실행하라는 의미입니다.
+              onPressed: _isLoading ? null : () => _searchPlayer(_controller.text),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white) // 로딩 중일 때 보여줄 위젯
+                  : const Text('검색'), // 평상시에 보여줄 위젯
             ),
           ],
         ),
