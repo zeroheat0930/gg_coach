@@ -1,2 +1,3 @@
 // lib/api_key.dart
 const String pubgApiKey = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJlMmY4MWQxMC03MDRlLTAxM2UtNDk4OS00MjVkMGRiNDBlMGYiLCJpc3MiOiJnYW1lbG9ja2VyIiwiaWF0IjoxNzU3NDkzMjY3LCJwdWIiOiJibHVlaG9sZSIsInRpdGxlIjoicHViZyIsImFwcCI6ImdnY29hY2gifQ.tcIEuQVyn9qVwyfnCYInxAa3SblTmroe5pDUdjXVYto';
+const String geminiApiKey = 'AIzaSyA1-olLxI7L0RwTNsuCMLvw4XTTglyb2sE';
