@@ -74,7 +74,10 @@ class _SearchScreenState extends State<SearchScreen> {
       if (response.statusCode == 200) {
         // 성공!
         final data = json.decode(response.body);
+        final player = data['data'][0];
         final playerId = data['data'][0]['id'];
+
+        final List<dynamic> matchIds = player['relationships']['matches']['data'];
 
         // Navigator를 사용해 새로운 화면으로 이동합니다.
         Navigator.push(
@@ -83,6 +86,7 @@ class _SearchScreenState extends State<SearchScreen> {
             builder: (context) => ResultScreen(
               nickname: nickname,
               playerId: playerId,
+              matchIds: matchIds,
             ),
           ),
         );
