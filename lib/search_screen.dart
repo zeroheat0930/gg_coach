@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:gg_coach/result_screen.dart';
+import 'package:gg_coach/main_screen.dart';
 import 'package:gg_coach/api_key.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // SearchScreen 클래스: '선수 검색' 화면을 담당할 위젯입니다.
 class SearchScreen extends StatefulWidget {
@@ -21,7 +22,7 @@ class _SearchScreenState extends State<SearchScreen> {
     // ... (이 함수 내용은 그대로 유지)
     setState(() { _isLoading = true; _searchResult = ''; });
     const apiKey = pubgApiKey;
-    final url = Uri.parse('https://api.pubg.com/shards/kakao/players?filter[playerNames]=$nickname');
+    final url = Uri.parse('https://api.pubg.com/shards/steam/players?filter[playerNames]=$nickname');
     try {
       final response = await http.get(url, headers: {'Authorization': 'Bearer $apiKey', 'Accept': 'application/vnd.api+json'});
       if (response.statusCode == 200) {
@@ -29,7 +30,22 @@ class _SearchScreenState extends State<SearchScreen> {
         final player = data['data'][0];
         final playerId = player['id'];
         final List<dynamic> matchIds = player['relationships']['matches']['data'];
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ResultScreen(nickname: nickname, playerId: playerId, matchIds: matchIds)));
+
+        // SharedPreferences를 열고, 검색 성공한 플레이어 정보를 저장합니다.
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('last_searched_nickname', nickname);
+        await prefs.setString('last_searched_playerId', playerId);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MainScreen( // ResultScreen 대신 MainScreen으로 이동!
+              nickname: nickname,
+              playerId: playerId,
+              matchIds: matchIds,
+            ),
+          ),
+        );
       } else {
         setState(() { _searchResult = '플레이어를 찾을 수 없습니다. (에러 코드: ${response.statusCode})'; });
       }

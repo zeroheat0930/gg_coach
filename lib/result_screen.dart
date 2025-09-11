@@ -136,9 +136,7 @@ class _ResultScreenState extends State<ResultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('${widget.nickname}님의 전적')),
-      body: _isLoading
+    return _isLoading
           ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const CircularProgressIndicator(), const SizedBox(height: 10), Text(_loadingMessage)]))
           : ListView.builder(
               itemCount: _matches.length,
@@ -186,8 +184,6 @@ class _ResultScreenState extends State<ResultScreen> {
                     ),
                   ),
                 );
-              },
-            ),
-    );
+    });
   }
 }
