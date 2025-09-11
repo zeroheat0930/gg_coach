@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gg_coach/search_screen.dart'; // 방금 분리한 파일
+import 'package:gg_coach/home_screen.dart'; // 앱의 유일한 시작 화면
 
 void main() {
   runApp(const MyApp());
@@ -16,8 +16,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      // 앱의 첫 화면은 이제 무조건 SearchScreen 입니다.
-      home: const SearchScreen(),
+      // 앱의 첫 화면은 이제 HomeScreen 입니다.
+      home: const HomeScreen(),
     );
   }
 }
