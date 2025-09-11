@@ -147,14 +147,42 @@ class _ResultScreenState extends State<ResultScreen> {
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ListTile(
-                    leading: CircleAvatar(child: Text('${matchData['rank']}')),
-                    title: Text('맵: ${matchData['map']} (${matchData['gameMode']})'),
-                    subtitle: Text('Kills: ${matchData['kills'] ?? 0} / Damage: ${(matchData['damage'] ?? 0).round()}'),
-                    // ### 이 부분을 수정/추가합니다! ###
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    // 등수를 보여주는 부분
+                    leading: CircleAvatar(
+                      radius: 25,
+                      child: Text(
+                        '${matchData['rank']}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                      ),
+                      // 1등이면 금색으로!
+                      backgroundColor: (matchData['rank'] == 1) ? Colors.amber[200] : Colors.grey[300],
+                    ),
+                    // 맵 이름과 게임 모드를 보여주는 부분
+                    title: Text(
+                      '${matchData['map']}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    // 킬과 대미지를 아이콘과 함께 보여주는 부분
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.dangerous_outlined, size: 16, color: Colors.red),
+                          const SizedBox(width: 4),
+                          Text('${matchData['kills'] ?? 0} kills'),
+                          const SizedBox(width: 16),
+                          const Icon(Icons.flash_on, size: 16, color: Colors.orange),
+                          const SizedBox(width: 4),
+                          Text('${(matchData['damage'] ?? 0).round()} dmg'),
+                        ],
+                      ),
+                    ),
+                    // AI 분석 버튼
                     trailing: IconButton(
                       icon: const Icon(Icons.psychology, color: Colors.blue),
                       tooltip: 'AI 분석 보기',
-                      onPressed: () => _getAiAnalysis(matchData), // 버튼 누르면 AI 분석 함수 호출
+                      onPressed: () => _getAiAnalysis(matchData),
                     ),
                   ),
                 );
