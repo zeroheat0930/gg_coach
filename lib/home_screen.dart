@@ -3,6 +3,7 @@ import 'package:gg_coach/leaderboard_screen.dart';
 import 'package:gg_coach/profile_screen.dart';
 import 'package:gg_coach/search_screen.dart';
 import 'package:gg_coach/stats_screen.dart';
+import 'package:gg_coach/global_stats_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -82,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             children: [
               // 각 서브 탭에 해당하는 화면들
               const LeaderboardScreen(), // 우리가 만든 리더보드 화면
-              const Center(child: Text('글로벌 홈 콘텐츠 (구현 예정)')),
+              const GlobalStatsScreen(),
               const Center(child: Text('글로벌 통계 콘텐츠 (구현 예정)')),
               const Center(child: Text('즐겨찾기 목록 (구현 예정)')),
             ],

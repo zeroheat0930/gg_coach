@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:gg_coach/api_key.dart';
+import 'package:gg_coach/player_data_tabs.dart'; // 분리된 PlayerDataTabs 위젯을 가져옵니다.
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({super.key});
@@ -24,7 +25,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   Future<void> _fetchLeaderboards() async {
     try {
-      // 시즌 ID를 한 번만 가져오기 위해 pc-as 서버를 기준으로 조회합니다.
       final seasonsUrl = Uri.parse('https://api.pubg.com/shards/pc-as/seasons');
       final seasonsResponse = await http.get(seasonsUrl, headers: {'Authorization': 'Bearer $pubgApiKey', 'Accept': 'application/vnd.api+json'});
       if (seasonsResponse.statusCode != 200) throw Exception('시즌 정보 로딩 실패');
@@ -36,7 +36,6 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
       const gameMode = 'squad-fpp';
 
-      // 각 서버에 보낼 요청을 미리 준비합니다.
       Future<http.Response> fetchPcAs = http.get(
         Uri.parse('https://api.pubg.com/shards/pc-as/leaderboards/$seasonId/$gameMode'),
         headers: {'Authorization': 'Bearer $pubgApiKey', 'Accept': 'application/vnd.api+json'},
@@ -85,12 +84,56 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     return processedList;
   }
 
+  // 플레이어 프로필 화면으로 이동하는 함수
+  Future<void> _navigateToPlayerProfile(String nickname, String playerId, String shard) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    // 플레이어의 최신 matchId 목록을 가져와야 합니다.
+    // 리더보드는 pc-as, pc-kakao shard를 쓰지만, player 검색은 steam, kakao shard를 씁니다.
+    final platform = shard == 'Steam' ? 'steam' : 'kakao';
+    final url = Uri.parse('https://api.pubg.com/shards/$platform/players/$playerId');
+
+    try {
+      final response = await http.get(url, headers: {'Authorization': 'Bearer $pubgApiKey', 'Accept': 'application/vnd.api+json'});
+      Navigator.pop(context); // 로딩 닫기
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final player = data['data'];
+        final playerData = {
+          'nickname': nickname,
+          'playerId': playerId,
+          'matchIds': player['relationships']['matches']['data'],
+        };
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => Scaffold(
+                appBar: AppBar(title: Text('$nickname님의 프로필')),
+                body: PlayerDataTabs(playerData: playerData),
+              )
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('플레이어 정보를 불러오는데 실패했습니다.')));
+      }
+    } catch(e) {
+      Navigator.pop(context); // 로딩 닫기
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('에러 발생: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
     if (_errorMessage.isNotEmpty) return Center(child: Text(_errorMessage, style: const TextStyle(color: Colors.red)));
 
-    Widget buildRankSection(String title, List<Map<String, dynamic>> players) {
+    Widget buildRankSection(String title, List<Map<String, dynamic>> players, String shardName) {
       final top10 = players.take(10).toList();
 
       return Column(
@@ -123,8 +166,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               final attributes = player['attributes'];
               final rank = player['rank'] ?? 0;
               final playerName = attributes['name'] ?? 'Unknown';
-
-              // ### 여기가 수정된 부분입니다! ###
+              final playerId = player['id'];
               final stats = attributes['stats'];
               final kda = (stats?['kda'] as num?)?.toStringAsFixed(2) ?? 'N/A';
               final rp = stats?['rankPoints']?.round() ?? 0;
@@ -142,6 +184,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     ],
                   ),
                 ),
+                onTap: () {
+                  _navigateToPlayerProfile(playerName, playerId, shardName);
+                },
               );
             },
           )
@@ -151,9 +196,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
     return ListView(
       children: [
-        if (_steamLeaderboard.isNotEmpty) buildRankSection('🏆 Steam 경쟁전 TOP 10', _steamLeaderboard),
+        if (_steamLeaderboard.isNotEmpty) buildRankSection('🏆 Steam 경쟁전 TOP 10', _steamLeaderboard, 'Steam'),
         const SizedBox(height: 20),
-        if (_kakaoLeaderboard.isNotEmpty) buildRankSection('🇰 KR 카카오 경쟁전 TOP 10', _kakaoLeaderboard),
+        if (_kakaoLeaderboard.isNotEmpty) buildRankSection('🇰 KR 카카오 경쟁전 TOP 10', _kakaoLeaderboard, 'Kakao'),
       ],
     );
   }
