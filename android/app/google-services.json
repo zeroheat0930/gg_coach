@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1007120454910",
+    "project_id": "projectpubg-e5215",
+    "storage_bucket": "projectpubg-e5215.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1007120454910:android:4e5b24788bd897f5a6c1af",
+        "android_client_info": {
+          "package_name": "com.jdj.ggcoach.gg_coach"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA23GZF_a7_ufi5mSE2S1HeUCcFscCKgGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
